@@ -1,3 +1,6 @@
 spring:
   application:
-    name: backend
+    name: eduvault-backend
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/eduvault
