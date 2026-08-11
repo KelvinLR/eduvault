@@ -8,12 +8,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "students")
 public class StudentDocument {
 
-    @Id // Marca esse campo como a chave primária (_id) no MongoDB
+    @Id
     private String id;
-    
-    // Por enquanto, na Camada 1, vamos salvar em plaintext.
-    // Nas próximas fases (quando introduzirmos criptografia), 
-    // substituiremos esses campos por encryptedData, encryptedKey, etc.
+
     private String name;
     private String cpf;
     private String birthDate;

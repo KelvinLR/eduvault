@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-// A anotação @Service diz ao Spring: "Esta classe contém regras de negócio".
+// @Service diz q aqui tem regra de negocios
 @Service
 public class StudentService {
 
@@ -16,7 +16,6 @@ public class StudentService {
     }
 
     public StudentResponse getMyData() {
-        // A lógica que estava no controller veio para cá
         List<StudentDocument> students = repository.findAll();
         if (students.isEmpty()) {
             return new StudentResponse("Nenhum aluno cadastrado", "", "", "");
