@@ -10,6 +10,8 @@ public class StudentDocument {
 
     @Id
     private String id;
+    
+    private String userId;
 
     private String name;
     private String cpf;
@@ -19,7 +21,8 @@ public class StudentDocument {
     public StudentDocument() {
     }
 
-    public StudentDocument(String name, String cpf, String birthDate, String phone) {
+    public StudentDocument(String userId, String name, String cpf, String birthDate, String phone) {
+        this.userId = userId;
         this.name = name;
         this.cpf = cpf;
         this.birthDate = birthDate;
@@ -32,6 +35,14 @@ public class StudentDocument {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getName() {

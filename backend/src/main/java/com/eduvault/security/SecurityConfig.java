@@ -32,8 +32,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Desabilita CSRF (Seguro para stateless JWT)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll() // Login liberado
-                // .requestMatchers("/admin/**").hasRole("ADMIN") // Implementaremos na Fase 6
-                // .requestMatchers("/students/**").hasRole("STUDENT") // Implementaremos na Fase 6
+                .requestMatchers("/admin/**").hasRole("ADMIN") // Restrito para Admins
+                .requestMatchers("/students/**").hasRole("STUDENT") // Restrito para Estudantes
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
