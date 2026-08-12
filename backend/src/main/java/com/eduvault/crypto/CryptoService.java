@@ -54,4 +54,31 @@ public class CryptoService {
         
         return new String(decryptedText);
     }
+
+    // --- RSA Methods ---
+
+    // 5. Gera um par de chaves RSA (Pública e Privada)
+    public java.security.KeyPair generateRsaKeyPair() throws NoSuchAlgorithmException {
+        java.security.KeyPairGenerator keyGen = java.security.KeyPairGenerator.getInstance("RSA");
+        keyGen.initialize(2048); // Tamanho seguro
+        return keyGen.generateKeyPair();
+    }
+
+    // 6. Criptografa a Chave AES usando a Chave Pública RSA
+    public byte[] encryptRSA(SecretKey aesKey, java.security.PublicKey rsaPublicKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, rsaPublicKey);
+        // O SecretKey.getEncoded() retorna os bytes brutos da chave AES (32 bytes para AES-256)
+        return cipher.doFinal(aesKey.getEncoded());
+    }
+
+    // 7. Descriptografa a Chave AES usando a Chave Privada RSA
+    public SecretKey decryptRSA(byte[] encryptedAesKey, java.security.PrivateKey rsaPrivateKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPPadding");
+        cipher.init(Cipher.DECRYPT_MODE, rsaPrivateKey);
+        byte[] decryptedKeyBytes = cipher.doFinal(encryptedAesKey);
+        
+        // Reconstrói a chave AES a partir dos bytes originais
+        return new javax.crypto.spec.SecretKeySpec(decryptedKeyBytes, "AES");
+    }
 }

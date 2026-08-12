@@ -38,4 +38,33 @@ public class CryptoServiceTest {
         // Verifica se o dado descriptografado é igual ao original
         assertEquals(originalData, decryptedData);
     }
+
+    @Test
+    public void testRsaEncryptionOfAesKey() throws Exception {
+        CryptoService cryptoService = new CryptoService();
+
+        // 1. Gera par de chaves RSA
+        java.security.KeyPair rsaKeyPair = cryptoService.generateRsaKeyPair();
+        assertNotNull(rsaKeyPair.getPublic());
+        assertNotNull(rsaKeyPair.getPrivate());
+
+        // 2. Gera chave AES
+        SecretKey originalAesKey = cryptoService.generateAesKey();
+        byte[] originalAesKeyBytes = originalAesKey.getEncoded();
+
+        // 3. Tranca a chave AES com RSA Público
+        byte[] encryptedAesKey = cryptoService.encryptRSA(originalAesKey, rsaKeyPair.getPublic());
+        assertNotNull(encryptedAesKey);
+        assertNotEquals(Base64.getEncoder().encodeToString(originalAesKeyBytes), Base64.getEncoder().encodeToString(encryptedAesKey));
+
+        // 4. Destranca a chave AES com RSA Privado
+        SecretKey decryptedAesKey = cryptoService.decryptRSA(encryptedAesKey, rsaKeyPair.getPrivate());
+        byte[] decryptedAesKeyBytes = decryptedAesKey.getEncoded();
+
+        // Verifica se a chave AES extraída é exatamente igual à original
+        assertEquals(
+                Base64.getEncoder().encodeToString(originalAesKeyBytes),
+                Base64.getEncoder().encodeToString(decryptedAesKeyBytes)
+        );
+    }
 }
