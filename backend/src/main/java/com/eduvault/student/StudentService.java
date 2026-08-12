@@ -20,13 +20,12 @@ public class StudentService {
 
     private final StudentRepository repository;
     private final CryptoService cryptoService;
-    private final ObjectMapper objectMapper; // Para converter JSON de/para Java Object
+    private final ObjectMapper objectMapper = new ObjectMapper(); // Instanciado diretamente
 
     @Autowired
-    public StudentService(StudentRepository repository, CryptoService cryptoService, ObjectMapper objectMapper) {
+    public StudentService(StudentRepository repository, CryptoService cryptoService) {
         this.repository = repository;
         this.cryptoService = cryptoService;
-        this.objectMapper = objectMapper;
     }
 
     private String getAuthenticatedUserId() {
