@@ -1,10 +1,9 @@
 package com.eduvault.student;
 
+import com.eduvault.crypto.EncryptedPayload;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-// @Document indica que essa classe será mapeada para uma collection no MongoDB.
-// O nome da collection será "students".
 @Document(collection = "students")
 public class StudentDocument {
 
@@ -13,20 +12,14 @@ public class StudentDocument {
     
     private String userId;
 
-    private String name;
-    private String cpf;
-    private String birthDate;
-    private String phone;
+    private EncryptedPayload encryptedPayload;
 
     public StudentDocument() {
     }
 
-    public StudentDocument(String userId, String name, String cpf, String birthDate, String phone) {
+    public StudentDocument(String userId, EncryptedPayload encryptedPayload) {
         this.userId = userId;
-        this.name = name;
-        this.cpf = cpf;
-        this.birthDate = birthDate;
-        this.phone = phone;
+        this.encryptedPayload = encryptedPayload;
     }
 
     public String getId() {
@@ -45,35 +38,11 @@ public class StudentDocument {
         this.userId = userId;
     }
 
-    public String getName() {
-        return name;
+    public EncryptedPayload getEncryptedPayload() {
+        return encryptedPayload;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCpf() {
-        return cpf;
-    }
-
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
-    }
-
-    public String getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(String birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setEncryptedPayload(EncryptedPayload encryptedPayload) {
+        this.encryptedPayload = encryptedPayload;
     }
 }

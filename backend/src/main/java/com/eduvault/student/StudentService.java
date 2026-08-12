@@ -4,19 +4,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
+import com.eduvault.crypto.CryptoService;
+import com.eduvault.crypto.EncryptedPayload;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import com.eduvault.security.CustomUserDetails;
+
+import javax.crypto.SecretKey;
+import java.util.Base64;
 import java.util.Optional;
 
 @Service
 public class StudentService {
 
     private final StudentRepository repository;
+    private final CryptoService cryptoService;
+    private final ObjectMapper objectMapper; // Para converter JSON de/para Java Object
 
     @Autowired
-    public StudentService(StudentRepository repository) {
+    public StudentService(StudentRepository repository, CryptoService cryptoService, ObjectMapper objectMapper) {
         this.repository = repository;
+        this.cryptoService = cryptoService;
+        this.objectMapper = objectMapper;
     }
 
     private String getAuthenticatedUserId() {
@@ -29,29 +39,71 @@ public class StudentService {
     }
 
     public StudentResponse getMyData() {
-        // vai verificar ae xistencia dos dados do usuario
         String userId = getAuthenticatedUserId();
         Optional<StudentDocument> optDoc = repository.findByUserId(userId);
         
-        if (optDoc.isEmpty()) {
+        if (optDoc.isEmpty() || optDoc.get().getEncryptedPayload() == null) {
             return new StudentResponse("Nenhum dado sensível cadastrado", "", "", "");
         }
         
-        StudentDocument doc = optDoc.get();
-        return new StudentResponse(doc.getName(), doc.getCpf(), doc.getBirthDate(), doc.getPhone());
+        return decryptPayload(optDoc.get().getEncryptedPayload());
     }
 
     public void updateMyData(StudentResponse studentResponse) {
         String userId = getAuthenticatedUserId();
         StudentDocument document = repository.findByUserId(userId).orElse(new StudentDocument());
-        
         document.setUserId(userId);
-        document.setName(studentResponse.name());
-        document.setCpf(studentResponse.cpf());
-        document.setBirthDate(studentResponse.birthDate());
-        document.setPhone(studentResponse.phone());
         
-        // Mais tarde, é AQUI no Service que faremos a criptografia antes de salvar!
+        document.setEncryptedPayload(encryptPayload(studentResponse));
+        
         repository.save(document);
+    }
+
+    // --- Métodos Auxiliares de Criptografia ---
+
+    public EncryptedPayload encryptPayload(StudentResponse data) {
+        try {
+            // 1. Gera chave AES e IV
+            SecretKey aesKey = cryptoService.generateAesKey();
+            byte[] iv = cryptoService.generateIv();
+
+            // 2. Converte o objeto para String JSON
+            String jsonRaw = objectMapper.writeValueAsString(data);
+
+            // 3. Criptografa o JSON
+            byte[] ciphertext = cryptoService.encryptAES(jsonRaw, aesKey, iv);
+
+            // 4. Tranca a chave AES com a chave pública RSA do servidor
+            byte[] encryptedAesKey = cryptoService.encryptRSA(aesKey, cryptoService.getPublicKey());
+
+            // 5. Retorna o Envelope
+            return new EncryptedPayload(
+                    Base64.getEncoder().encodeToString(ciphertext),
+                    Base64.getEncoder().encodeToString(iv),
+                    Base64.getEncoder().encodeToString(encryptedAesKey)
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao criptografar dados do estudante", e);
+        }
+    }
+
+    public StudentResponse decryptPayload(EncryptedPayload payload) {
+        try {
+            // 1. Decodifica Base64
+            byte[] ciphertext = Base64.getDecoder().decode(payload.getCiphertext());
+            byte[] iv = Base64.getDecoder().decode(payload.getIv());
+            byte[] encryptedAesKey = Base64.getDecoder().decode(payload.getEncryptedAesKey());
+
+            // 2. Destranca a chave AES usando a Chave Privada RSA do servidor
+            SecretKey aesKey = cryptoService.decryptRSA(encryptedAesKey, cryptoService.getPrivateKey());
+
+            // 3. Descriptografa o dado
+            String jsonRaw = cryptoService.decryptAES(ciphertext, aesKey, iv);
+
+            // 4. Converte de volta para Objeto
+            return objectMapper.readValue(jsonRaw, StudentResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao descriptografar dados do estudante", e);
+        }
     }
 }

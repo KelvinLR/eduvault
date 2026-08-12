@@ -20,6 +20,24 @@ public class CryptoService {
     private static final int GCM_TAG_LENGTH = 128; // em bits
 
     private final SecureRandom secureRandom = new SecureRandom();
+    private final java.security.KeyPair rsaKeyPair;
+
+    public CryptoService() {
+        try {
+            this.rsaKeyPair = generateRsaKeyPair();
+            System.out.println("⚠️ ALERTA DE SEGURANÇA: Par de chaves RSA gerado e mantido em memória (Modo PoC).");
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao inicializar chaves RSA", e);
+        }
+    }
+
+    public java.security.PublicKey getPublicKey() {
+        return rsaKeyPair.getPublic();
+    }
+
+    public java.security.PrivateKey getPrivateKey() {
+        return rsaKeyPair.getPrivate();
+    }
 
     // 1. Gera uma Chave Simétrica (AES-256)
     public SecretKey generateAesKey() throws NoSuchAlgorithmException {
