@@ -1,18 +1,40 @@
 package com.eduvault.auth;
 
+import com.eduvault.security.CustomUserDetails;
+import com.eduvault.security.JwtService;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-@RestController // isso vai retornar automaticamente um JSON ou XML
+@RestController
 @RequestMapping("/auth")
-// mapeia uma requisicao http p controller e metodos
-// ela eh a mãe e meio q define a URL base do nosso request rsrs
 public class AuthController {
-    // essa annotation vai enviar coisa p serv (eh so um POST)
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+    }
+
     @PostMapping("/login")
-    // o request body vai trazer uma requisicao http p um objeto jaaj
     public LoginResponse login(@RequestBody LoginRequest loginRequest) {
-        return new LoginResponse(
-                "token", "ADM-mock"
+        // O AuthenticationManager vai verificar o hash da senha com o banco
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.username(),
+                        loginRequest.password()
+                )
         );
+
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        
+        // Se chegou aqui, a senha está correta!
+        String roleName = user.getUser().getRole().name();
+        String token = jwtService.generateToken(user, roleName);
+
+        return new LoginResponse(token, roleName);
     }
 }
