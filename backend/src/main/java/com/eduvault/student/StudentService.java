@@ -48,12 +48,12 @@ public class StudentService {
         return decryptPayload(optDoc.get().getEncryptedPayload());
     }
 
-    public void updateMyData(StudentResponse studentResponse) {
+    public void updateMyData(EncryptedPayload encryptedPayload) {
         String userId = getAuthenticatedUserId();
         StudentDocument document = repository.findByUserId(userId).orElse(new StudentDocument());
         document.setUserId(userId);
         
-        document.setEncryptedPayload(encryptPayload(studentResponse));
+        document.setEncryptedPayload(encryptedPayload);
         
         repository.save(document);
     }
