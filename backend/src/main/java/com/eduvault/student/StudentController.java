@@ -1,5 +1,6 @@
 package com.eduvault.student;
 
+import com.eduvault.crypto.EncryptedPayload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +23,9 @@ public class StudentController {
     }
 
     @PutMapping("/me")
-    public String editStudentInfo(@RequestBody StudentResponse studentResponse) {
+    public String editStudentInfo(@RequestBody EncryptedPayload encryptedPayload) {
         // O Controller só repassa a chamada
-        service.updateMyData(studentResponse);
+        service.updateMyData(encryptedPayload);
         return "Data successfully updated in MongoDB via Service";
     }
 }
